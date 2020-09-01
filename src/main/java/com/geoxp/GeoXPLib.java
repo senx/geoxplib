@@ -58,6 +58,23 @@ public final class GeoXPLib {
   }
   public static final class GeoXPShape implements Serializable {
     long[] geocells;
+
+    @Override
+    public boolean equals(Object o) {
+      if (this == o) {
+        return true;
+      }
+      if (o == null || getClass() != o.getClass()) {
+        return false;
+      }
+      GeoXPShape that = (GeoXPShape) o;
+      return Arrays.equals(geocells, that.geocells);
+    }
+
+    @Override
+    public int hashCode() {
+      return Arrays.hashCode(geocells);
+    }
   }
   
   /**
