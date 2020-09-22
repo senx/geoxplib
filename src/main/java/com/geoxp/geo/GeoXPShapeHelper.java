@@ -85,7 +85,7 @@ public class GeoXPShapeHelper {
       }
              
       idx = Arrays.binarySearch(bcells, cell);       
-      
+
       if (idx >= 0) {
         bstart[i] = idx;
       } else {
@@ -172,7 +172,7 @@ public class GeoXPShapeHelper {
         }
       }
     }
-
+    
     //
     // Maintain a bitset of included cells
     //
@@ -203,7 +203,7 @@ public class GeoXPShapeHelper {
             if (idx < 0) {
               idx = -idx - 1;
             }
-            while(idx < bend[subres]) {
+            while(idx <= bend[subres]) {
               if (cell != (bcells[idx] & RESOLUTION_MASKS[res])) {
                 break;
               }
@@ -235,7 +235,7 @@ public class GeoXPShapeHelper {
             if (idx < 0) {
               idx = -idx - 1;
             }
-            while(idx < aend[subres]) {
+            while(idx <= aend[subres]) {
               if (cell != (acells[idx] & RESOLUTION_MASKS[res])) {
                 break;
               }
