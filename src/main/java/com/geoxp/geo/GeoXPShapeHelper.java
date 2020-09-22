@@ -25,7 +25,7 @@ import com.geoxp.GeoXPLib.GeoXPShape;
 
 public class GeoXPShapeHelper {
   
-  private static long[] RESOLUTION_MASKS;
+  private static final long[] RESOLUTION_MASKS;
   
   static {
     RESOLUTION_MASKS = new long[16];
@@ -55,207 +55,232 @@ public class GeoXPShapeHelper {
   }
   
   private static GeoXPShape intersection(GeoXPShape a, GeoXPShape b, boolean check) {
-       
-   long[] acells = GeoXPLib.getCells(a);
-   long[] bcells = GeoXPLib.getCells(b);
-   
-   //
-   // Sort cells
-   //
-   //Arrays.sort(acells);
-   //Arrays.sort(bcells);
-   
-   // Determine the start/end index of each resolution
-   int[] astart = new int[16];
-   int[] aend = new int[16];
-   int[] bstart = new int[16];
-   int[] bend = new int[16];
-   
-   for (int i = 1; i < 16; i++) {
-     long cell = ((long) i) << 60;
-     int idx = Arrays.binarySearch(acells, cell); 
 
-     if (idx >= 0) {
-       astart[i] = idx;
-     } else {
-       astart[i] = -idx - 1;
-       if (astart[i] >= acells.length || (acells[astart[i]] & 0xF000000000000000L) != cell) {
-         astart[i] = -1;
-       }
-     }
-            
-     idx = Arrays.binarySearch(bcells, cell);       
-     
-     if (idx >= 0) {
-       bstart[i] = idx;
-     } else {
-       bstart[i] = -idx - 1;
-       if (bstart[i] >= bcells.length || (bcells[bstart[i]] & 0xF000000000000000L) != cell) {
-         bstart[i] = -1;
-       }
-     }
-   }
-   
-   for (int i = 1; i < 16; i++) {
-     aend[i] = -1;
-     if (-1 != astart[i]) {
-       // Find the start of the next index
-       for (int j = i + 1; j < 16; j++) {
-         if (-1 != astart[j]) {
-           aend[i] = astart[j] - 1;
-           break;
-         }
-       }
-       if (-1 == aend[i]) {
-         if (i >= 8) {
-           for (int j = 1; j < 8; j++) {
-             if (-1 != astart[j]) {
-               aend[i] = astart[j] - 1;
-               break;
-             }
-           }
-         }
-         if (-1 == aend[i]) {
-           aend[i] = acells.length - 1;
-         }
-       }
-     }
-   }
+    long[] acells = GeoXPLib.getCells(a);
+    long[] bcells = GeoXPLib.getCells(b);
 
-   for (int i = 1; i < 16; i++) {
-     bend[i] = -1;
-     if (-1 != bstart[i]) {
-       // Find the start of the next index
-       for (int j = i + 1; j < 16; j++) {
-         if (-1 != bstart[j]) {
-           bend[i] = bstart[j] - 1;
-           break;
-         }
-       }
-       if (-1 == bend[i]) {
-         if (i >= 8) {
-           for (int j = 1; j < 8; j++) {
-             if (-1 != bstart[j]) {
-               bend[i] = bstart[j] - 1;
-               break;
-             }
-           }
-         }
-         if (-1 == bend[i]) {
-           bend[i] = bcells.length - 1;
-         }
-       }
-     }
-   }
+    //
+    // Sort cells
+    //
+    //Arrays.sort(acells);
+    //Arrays.sort(bcells);
 
-   //
-   // Maintain a bitset of included cells
-   //
-   
-   BitSet froma = new BitSet(acells.length);
-   BitSet fromb = new BitSet(bcells.length);
-   
-   //
-   // Now iterate over the cells of both shapes by increasing resolution
-   //
-   
-   for (int res = 1; res < 16; res++) {
-     if (-1 != astart[res]) {
-       for (int i = astart[res]; i <= aend[res]; i++) {
-         // Ignore cells which are already included
-         if (froma.get(i)) {
-           continue;
-         }
-         long cell = acells[i] & RESOLUTION_MASKS[res];
-         // Iterate over the resolutions finer or equal to res in the other shape
-         for (int subres = res; subres < 16; subres++) {
-           if (-1 == bstart[subres]) {
-             continue;
-           }
-           // attempt to find the insertion point for the subcell 0 at subres
-           long subcell = cell | (((long) subres) << 60);
-           int idx = Arrays.binarySearch(bcells, bstart[subres], bend[subres] + 1, subcell);
-           if (idx < 0) {
-             idx = -idx - 1;
-           }
-           while(idx < bend[subres]) {
-             if (cell != (bcells[idx] & RESOLUTION_MASKS[res])) {
-               break;
-             }
-             if (check) {
-               return new GeoXPShape();
-             }
-             fromb.set(idx);
-             idx++;
-           }
-         }
-       }
-     }
-     
-     if (-1 != bstart[res]) {
-       for (int i = bstart[res]; i <= bend[res]; i++) {
-         // Ignore cells which are already included
-         if (fromb.get(i)) {
-           continue;
-         }
-         long cell = bcells[i] & RESOLUTION_MASKS[res];
-         // Iterate over the resolution finer or equal to res in the other shape
-         for (int subres = res; subres < 16; subres++) {
-           if (-1 == astart[subres]) {
-             continue;
-           }
-           // attempt to find the insertion point for the subcell 0 at subres
-           long subcell = cell | (((long) subres) << 60);
-           int idx = Arrays.binarySearch(acells, astart[subres], aend[subres] + 1, subcell);
-           if (idx < 0) {
-             idx = -idx - 1;
-           }
-           while(idx < aend[subres]) {
-             if (cell != (acells[idx] & RESOLUTION_MASKS[res])) {
-               break;
-             }
-             if (check) {
-               return new GeoXPShape();
-             }
-             froma.set(idx);
-             idx++;
-           }
-         }
-       }
-     }
-   }
+    // Determine the start/end index of each resolution
+    int[] astart = new int[16];
+    int[] aend = new int[16];
+    int[] bstart = new int[16];
+    int[] bend = new int[16];
 
-   // If only checking, return null as the intersection is empty
-   if (check) {
-     return null;
-   }
-   
-   long[] intersection = new long[froma.cardinality() + fromb.cardinality()];
-   
-   int i = 0;
-   int idx = 0;
-   
-   while(true) {
-     idx = froma.nextSetBit(idx);
-     if (-1 == idx) {
-       break;
-     }
-     intersection[i++] = acells[idx];
-     idx++;
-   }
-   
-   idx = 0;
-   
-   while(true) {
-     idx = fromb.nextSetBit(idx);
-     if (-1 == idx) {
-       break;
-     }
-     intersection[i++] = bcells[idx];
-     idx++;
-   }
-   
-   Arrays.sort(intersection);
-   return GeoXPLib.fromCells(intersection, false);
+    for (int i = 1; i < 16; i++) {
+      long cell = ((long) i) << 60;
+      int idx = Arrays.binarySearch(acells, cell); 
+
+      if (idx >= 0) {
+        astart[i] = idx;
+      } else {
+        astart[i] = -idx - 1;
+        if (astart[i] >= acells.length || (acells[astart[i]] & 0xF000000000000000L) != cell) {
+          astart[i] = -1;
+        }
+      }
+             
+      idx = Arrays.binarySearch(bcells, cell);       
+      
+      if (idx >= 0) {
+        bstart[i] = idx;
+      } else {
+        bstart[i] = -idx - 1;
+        if (bstart[i] >= bcells.length || (bcells[bstart[i]] & 0xF000000000000000L) != cell) {
+          bstart[i] = -1;
+        }
+      }
+    }
+
+    //
+    // We now have the start index of each resolution range
+    // determine the end index as one prior to the start index
+    // of the next resolution.
+    // WARNING: resolutions are in this order when sorted numerically
+    // 8 9 10 11 12 13 14 15 1 2 3 4 5 6 7
+    
+    for (int i = 1; i < 16; i++) {
+      aend[i] = -1;
+      if (-1 != astart[i]) {
+        if (i <= 6) {
+          // For resolutions up to 6 we check the next ones
+          for (int j = i + 1; j < 8; j++) {
+            if (-1 != astart[j]) {
+              aend[i] = astart[j] - 1;
+              break;
+            }            
+          }
+        } else if (i >= 8) {
+          // For resolutions 8 and over we check i+1 => 15 then 1->7
+          for (int j = i + 1; j < 16; j++) {
+            if (-1 != astart[j]) {
+              aend[i] = astart[j] - 1;
+              break;
+            }
+          }
+          if (-1 == aend[i]) {
+            for (int j = 1; j < 8; j++) {
+              if (-1 != astart[j]) {
+                aend[i] = astart[j] - 1;
+                break;
+              }              
+            }
+          }
+        }
+        // If end is not yet set, set it to the end of the array
+        if (-1 == aend[i]) {
+          aend[i] = acells.length - 1;
+        }
+      }
+    }
+
+    for (int i = 1; i < 16; i++) {
+      bend[i] = -1;
+      if (-1 != bstart[i]) {
+        if (i <= 6) {
+          // For resolutions up to 6 we check the next ones
+          for (int j = i + 1; j < 8; j++) {
+            if (-1 != bstart[j]) {
+              bend[i] = bstart[j] - 1;
+              break;
+            }            
+          }
+        } else if (i >= 8) {
+          // For resolutions 8 and over we check i+1 => 15 then 1->7
+          for (int j = i + 1; j < 16; j++) {
+            if (-1 != bstart[j]) {
+              bend[i] = bstart[j] - 1;
+              break;
+            }
+          }
+          if (-1 == bend[i]) {
+            for (int j = 1; j < 8; j++) {
+              if (-1 != bstart[j]) {
+                bend[i] = bstart[j] - 1;
+                break;
+              }              
+            }
+          }
+        }
+        // If end is not yet set, set it to the end of the array
+        if (-1 == bend[i]) {
+          bend[i] = bcells.length - 1;
+        }
+      }
+    }
+
+    //
+    // Maintain a bitset of included cells
+    //
+
+    BitSet froma = new BitSet(acells.length);
+    BitSet fromb = new BitSet(bcells.length);
+
+    //
+    // Now iterate over the cells of both shapes by increasing resolution
+    //
+
+    for (int res = 1; res < 16; res++) {
+      if (-1 != astart[res]) {
+        for (int i = astart[res]; i <= aend[res]; i++) {
+          // Ignore cells which are already included
+          if (froma.get(i)) {
+            continue;
+          }
+          long cell = acells[i] & RESOLUTION_MASKS[res];
+          // Iterate over the resolutions finer or equal to res in the other shape
+          for (int subres = res; subres < 16; subres++) {
+            if (-1 == bstart[subres]) {
+              continue;
+            }
+            // attempt to find the insertion point for the subcell 0 at subres
+            long subcell = cell | (((long) subres) << 60);
+            int idx = Arrays.binarySearch(bcells, bstart[subres], bend[subres] + 1, subcell);
+            if (idx < 0) {
+              idx = -idx - 1;
+            }
+            while(idx < bend[subres]) {
+              if (cell != (bcells[idx] & RESOLUTION_MASKS[res])) {
+                break;
+              }
+              if (check) {
+                return new GeoXPShape();
+              }
+              fromb.set(idx);
+              idx++;
+            }
+          }
+        }
+      }
+      
+      if (-1 != bstart[res]) {
+        for (int i = bstart[res]; i <= bend[res]; i++) {
+          // Ignore cells which are already included
+          if (fromb.get(i)) {
+            continue;
+          }
+          long cell = bcells[i] & RESOLUTION_MASKS[res];
+          // Iterate over the resolution finer or equal to res in the other shape
+          for (int subres = res; subres < 16; subres++) {
+            if (-1 == astart[subres]) {
+              continue;
+            }
+            // attempt to find the insertion point for the subcell 0 at subres
+            long subcell = cell | (((long) subres) << 60);
+            int idx = Arrays.binarySearch(acells, astart[subres], aend[subres] + 1, subcell);
+            if (idx < 0) {
+              idx = -idx - 1;
+            }
+            while(idx < aend[subres]) {
+              if (cell != (acells[idx] & RESOLUTION_MASKS[res])) {
+                break;
+              }
+              if (check) {
+                return new GeoXPShape();
+              }
+              froma.set(idx);
+              idx++;
+            }
+          }
+        }
+      }
+    }
+
+    //If only checking, return null as the intersection is empty
+    if (check) {
+      return null;
+    }
+
+    long[] intersection = new long[froma.cardinality() + fromb.cardinality()];
+
+    int i = 0;
+    int idx = 0;
+
+    while (true) {
+      idx = froma.nextSetBit(idx);
+      if (-1 == idx) {
+        break;
+      }
+      intersection[i++] = acells[idx];
+      idx++;
+    }
+
+    idx = 0;
+
+    while (true) {
+      idx = fromb.nextSetBit(idx);
+      if (-1 == idx) {
+        break;
+      }
+      intersection[i++] = bcells[idx];
+      idx++;
+    }
+
+    Arrays.sort(intersection);
+    return GeoXPLib.fromCells(intersection, false);
   }
 }
