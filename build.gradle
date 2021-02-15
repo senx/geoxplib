@@ -1,3 +1,23 @@
+//
+//   GeoXP Lib, library for efficient geo data manipulation
+//
+//   Copyright 2020-2021  SenX S.A.S.
+//   Copyright 2019-2020  iroise.net S.A.S.
+//   Copyright 1999-2019  Mathias Herberts
+//
+//   Licensed under the Apache License, Version 2.0 (the "License");
+//   you may not use this file except in compliance with the License.
+//   You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+//   Unless required by applicable law or agreed to in writing, software
+//   distributed under the License is distributed on an "AS IS" BASIS,
+//   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+//   See the License for the specific language governing permissions and
+//   limitations under the License.
+//
+
 plugins {
   id 'java'
   id 'com.github.johnrengelman.shadow' version '4.0.3'
@@ -5,7 +25,6 @@ plugins {
   id 'idea'
   id 'signing'
   id 'maven-publish'
-  id 'com.jfrog.bintray' version '1.8.1'
 }
 
 sourceCompatibility = 1.6
@@ -64,34 +83,90 @@ def getVersionName = { ->
   return stdout.toString().trim()
 }
 
+task sourceJar(type: Jar) {
+  archiveClassifier = "sources"
+}
+
+task javadocJar(type: Jar) {
+  archiveClassifier = "javadoc"
+}
+
 publishing {
   publications {
     geoxplib(MavenPublication) {
       from components.java
-      //artifact jar
-      groupId 'com.geoxp'
+      groupId 'io.senx'
       artifactId 'geoxplib'
       version getVersionName()
+      pom {
+        name = 'GeoXP Lib'
+        // optionally artifactId can be defined here
+        description = 'A java library for efficient Geo data manipulation'
+        url = 'https://github.com/senx/geoxplib'
+
+        scm {
+          connection = 'scm:git:git://github.com/senx/geoxplib.git'
+          developerConnection = 'scm:git:git://github.com/senx/geoxplib.git'
+          url = 'https://github.com/senx/geoxplib'
+        }
+
+        licenses {
+          license {
+            name = 'The Apache License, Version 2.0'
+            url = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+          }
+        }
+
+        developers {
+          developer {
+            id = 'senx'
+            name = 'SenX'
+            email = 'contact@senx.io'
+          }
+        }
+      }
+    }
+  }
+  repositories {
+    maven {
+      def stagingRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+      def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+      url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : stagingRepoUrl
+
+      credentials {
+        username = ossrhUsername
+        password = ossrhPassword
+      }
     }
   }
 }
 
-bintray {
-  user = project.hasProperty('bintrayUser') ? project.property('bintrayUser') : System.getenv('BINTRAY_USER')
-  key = project.hasProperty('bintrayApiKey') ? project.property('bintrayApiKey') : System.getenv('BINTRAY_API_KEY')
 
-  publications = ['geoxplib']
+java {
+  withJavadocJar()
+  withSourcesJar()
+}
 
-  pkg {
-    repo = 'maven'
-    name = 'geoxplib'
-    userOrg = 'senx'
-    licenses = ['Apache-2.0']
-    vcsUrl = 'https://github.com/senx/geoxplib.git'
-    version {
-      name = getVersionName()
-      released  = new Date()
-      vcsTag = getVersionName()
-    }
+javadoc {
+  source = sourceSets.main.allJava
+  classpath = configurations.compileClasspath
+
+  options
+  {
+    setMemberLevel JavadocMemberLevel.PUBLIC
+    setAuthor true
+
+    links "https://docs.oracle.com/javase/8/docs/api/"
   }
+}
+
+signing {
+  useGpgCmd()
+  sign publishing.publications.geoxplib
+}
+
+javadoc {
+    if(JavaVersion.current().isJava9Compatible()) {
+        options.addBooleanOption('html5', true)
+    }
 }
