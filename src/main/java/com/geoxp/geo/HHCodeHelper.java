@@ -437,14 +437,14 @@ public final class HHCodeHelper {
    * @return
    */
   public static final long getCenter(long hhcode, int resolution) {
-    // Limit 'hhcode' to 'resolution'
-    if (resolution >= 2 && resolution <= 32) {
-      hhcode = hhcode & Coverage.PREFIX_MASK[(resolution >>> 1) - 1];
-    }
-
-    // Add the 'center bits' for the resolution just above 'resolution'
-    if (resolution >= 2 && resolution < 32) {
-      hhcode = hhcode | Coverage.CENTER_BITS[((resolution >>> 1) - 1) + 1];
+    if (0 == resolution) {
+      // Special case needed because << 64 will result in no shift.
+      hhcode = 0xC000000000000000L;
+    } else if (resolution < 32) {
+      // Limit 'hhcode' to 'resolution'
+      hhcode &= 0xffffffffffffffffL << (64 - resolution * 2);
+      // Add the 'center bits' for the resolution just above 'resolution'
+      hhcode |= 0xC000000000000000L >>> (2 * resolution);
     }
 
     return hhcode;
