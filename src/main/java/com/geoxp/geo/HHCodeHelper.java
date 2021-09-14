@@ -150,7 +150,7 @@ public final class HHCodeHelper {
    * Return the hhcode of the cell above the given one, at the given resolution
    * 
    * @param hhcode HHCode of the original cell
-   * @param resolution Resolution at which to do the math, from 1to 32
+   * @param resolution Resolution at which to do the math, from 1 to 32
    * @return
    */
   public static final long northHHCode(long hhcode, int resolution) {
@@ -164,7 +164,7 @@ public final class HHCodeHelper {
     // Add 1**(32 - resolution) to the lat
     //
     
-    coords[0] = (coords[0] + (1 << (32 - resolution)));
+    coords[0] = (coords[0] + (1L << (32 - resolution)));
     
     //
     // Rebuild HHCode
@@ -177,7 +177,7 @@ public final class HHCodeHelper {
    * Return the hhcode of the cell below the given one, at the given resolution
    * 
    * @param hhcode HHCode of the original cell
-   * @param resolution Resolution at which to do the math, from 1to 32
+   * @param resolution Resolution at which to do the math, from 1 to 32
    * @return
    */
   public static final long southHHCode(long hhcode, int resolution) {
@@ -191,7 +191,7 @@ public final class HHCodeHelper {
     // Add 1**(32 - resolution) to the lat
     //
     
-    coords[0] = (coords[0] - (1 << (32 - resolution)));
+    coords[0] = (coords[0] - (1L << (32 - resolution)));
     
     //
     // Rebuild HHCode
@@ -204,7 +204,7 @@ public final class HHCodeHelper {
    * Return the hhcode of the cell to the right of the given one, at the given resolution
    * 
    * @param hhcode HHCode of the original cell
-   * @param resolution Resolution at which to do the math, from 1to 32
+   * @param resolution Resolution at which to do the math, from 1 to 32
    * @return
    */
   public static final long eastHHCode(long hhcode, int resolution) {
@@ -218,7 +218,7 @@ public final class HHCodeHelper {
     // Add 1**(32 - resolution) to the lon
     //
     
-    coords[1] = (coords[1] + (1 << (32 - resolution)));
+    coords[1] = (coords[1] + (1L << (32 - resolution)));
 
     //
     // Rebuild HHCode
@@ -231,7 +231,7 @@ public final class HHCodeHelper {
    * Return the hhcode of the cell to the left of the given one, at the given resolution
    * 
    * @param hhcode HHCode of the original cell
-   * @param resolution Resolution at which to do the math, from 1to 32
+   * @param resolution Resolution at which to do the math, from 1 to 32
    * @return
    */
   public static final long westHHCode(long hhcode, int resolution) {
@@ -245,7 +245,7 @@ public final class HHCodeHelper {
     // Subtract 1**(32 - resolution) to the lon
     //
     
-    coords[1] = (coords[1] - (1 << (32 - resolution)));
+    coords[1] = (coords[1] - (1L << (32 - resolution)));
 
     //
     // Rebuild HHCode
@@ -254,6 +254,13 @@ public final class HHCodeHelper {
     return buildHHCode(coords[0], coords[1]);
   }
 
+  /**
+   * Return the hhcode of the cell to the right of cell above the given one, at the given resolution
+   *
+   * @param hhcode HHCode of the original cell
+   * @param resolution Resolution at which to do the math, from 1 to 32
+   * @return
+   */
   public static final long northEastHHCode(long hhcode, int resolution) {
     //
     // Split hhcode into lat/lon
@@ -265,8 +272,8 @@ public final class HHCodeHelper {
     // add delta to lat/lon
     //
     
-    coords[0] = (coords[0] + (1 << (32 - resolution)));
-    coords[1] = (coords[1] + (1 << (32 - resolution)));
+    coords[0] = (coords[0] + (1L << (32 - resolution)));
+    coords[1] = (coords[1] + (1L << (32 - resolution)));
 
     //
     // Rebuild HHCode
@@ -275,6 +282,13 @@ public final class HHCodeHelper {
     return buildHHCode(coords[0], coords[1]);    
   }
 
+  /**
+   * Return the hhcode of the cell to the right of cell below the given one, at the given resolution
+   *
+   * @param hhcode HHCode of the original cell
+   * @param resolution Resolution at which to do the math, from 1 to 32
+   * @return
+   */
   public static final long southEastHHCode(long hhcode, int resolution) {
     //
     // Split hhcode into lat/lon
@@ -286,8 +300,8 @@ public final class HHCodeHelper {
     // substract/add delta to lat/lon
     //
     
-    coords[0] = (coords[0] - (1 << (32 - resolution)));
-    coords[1] = (coords[1] + (1 << (32 - resolution)));
+    coords[0] = (coords[0] - (1L << (32 - resolution)));
+    coords[1] = (coords[1] + (1L << (32 - resolution)));
 
     //
     // Rebuild HHCode
@@ -296,6 +310,13 @@ public final class HHCodeHelper {
     return buildHHCode(coords[0], coords[1]);    
   }
 
+  /**
+   * Return the hhcode of the cell to the left of the cell below the given one, at the given resolution
+   *
+   * @param hhcode HHCode of the original cell
+   * @param resolution Resolution at which to do the math, from 1 to 32
+   * @return
+   */
   public static final long southWestHHCode(long hhcode, int resolution) {
     //
     // Split hhcode into lat/lon
@@ -307,8 +328,8 @@ public final class HHCodeHelper {
     // substract delta to lat/lon
     //
     
-    coords[0] = (coords[0] - (1 << (32 - resolution)));
-    coords[1] = (coords[1] - (1 << (32 - resolution)));
+    coords[0] = (coords[0] - (1L << (32 - resolution)));
+    coords[1] = (coords[1] - (1L << (32 - resolution)));
 
     //
     // Rebuild HHCode
@@ -317,6 +338,13 @@ public final class HHCodeHelper {
     return buildHHCode(coords[0], coords[1]);    
   }
 
+  /**
+   * Return the hhcode of the cell to the left of the cell above the given one, at the given resolution
+   *
+   * @param hhcode HHCode of the original cell
+   * @param resolution Resolution at which to do the math, from 1 to 32
+   * @return
+   */
   public static final long northWestHHCode(long hhcode, int resolution) {
     //
     // Split hhcode into lat/lon
@@ -349,8 +377,8 @@ public final class HHCodeHelper {
     // Apply delta at the given resolution
     //
     
-    coords[0] = (coords[0] + latdelta * (1 << (32 - resolution)));
-    coords[1] = (coords[1] + londelta * (1 << (32 - resolution)));
+    coords[0] = (coords[0] + latdelta * (1L << (32 - resolution)));
+    coords[1] = (coords[1] + londelta * (1L << (32 - resolution)));
     
     //
     // Rebuild HHCode
@@ -427,13 +455,12 @@ public final class HHCodeHelper {
     return latlon;
   }
 
-
   /**
    * Return the hhcode of the center of the cell at 'resolution'
    * which contains 'hhcode'
    * 
-   * @param hhcode
-   * @param resolution
+   * @param hhcode HHCode of the original cell
+   * @param resolution Resolution at which to do the math, from 0 to 32. A resolution of 0 means the cell represents the whole planisphere.
    * @return
    */
   public static final long getCenter(long hhcode, int resolution) {
