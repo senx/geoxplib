@@ -128,14 +128,16 @@ publishing {
     }
   }
   repositories {
-    maven {
-      def stagingRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
-      def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
-      url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : stagingRepoUrl
+    if (project.hasProperty('ossrhUsername')) {
+      maven {
+        def stagingRepoUrl = 'https://oss.sonatype.org/service/local/staging/deploy/maven2/'
+        def snapshotsRepoUrl = 'https://oss.sonatype.org/content/repositories/snapshots/'
+        url = version.endsWith('SNAPSHOT') ? snapshotsRepoUrl : stagingRepoUrl
 
-      credentials {
-        username = ossrhUsername
-        password = ossrhPassword
+        credentials {
+          username = ossrhUsername
+          password = ossrhPassword
+        }
       }
     }
   }
